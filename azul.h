@@ -166,6 +166,15 @@ class Azul
     int totaalscore;
     vector<pair <int,int> > zetten;
 
+    
+    int extrascore(pair <int, int> zet);
+    void recursiefminimaxi(int &mini, long long &volgordesMini, 
+                            int &maxi, long long &volgordesMaxi);
+    void topdownminimax(int &mini, long long &volgordesMini, 
+                        int &maxi, long long &volgordesMaxi);
+    bool isvol();
+    int encode();
+    void decode();
   // TODO: uw eigen private memberfuncties en -variabelen
 
 };

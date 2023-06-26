@@ -111,30 +111,78 @@ void Azul::drukAfBord ()
     }
     cout<< endl;
   }
-
-  return;
 }  // drukAfBord
 
 //****************************************************************************
+int Azul::extrascore(pair <int, int> zet){
+  int rij = zet.first;
+  int kolom = zet.second;
+  int score_h = 0;
+  int score_v = 0;
 
+  for (int i = rij; i >= 0; i--){
+    if (bord[i][kolom] == 1) {
+      score_v++;
+    }
+    else {
+      break;
+    }
+  }
+  for (int i = rij + 1; i < hoogte; i++){
+    if (bord[i][kolom] == 1) {
+      score_v++;
+    }
+    else {
+      break;
+    }
+  }
+  for (int i = kolom; i >= 0; i--){
+    if (bord[rij][i] == 1) {
+      score_h++;
+    }
+    else {
+      break;
+    }
+  }
+  for (int i = kolom + 1; i < breedte; i++){
+    if (bord[rij][i] == 1) {
+      score_h++;
+    }
+    else {
+      break;
+    }
+  }
+  if (score_h == 1) {
+    return score_v;
+  }
+  if (score_v == 1) {
+    return score_h;
+  }
+  else {
+    return score_h + score_v;
+  }
+};
+
+//****************************************************************************
 bool Azul::doeZet (int rij, int kolom)
 {
   if (!geldigBord) {
-    cout << "test" << endl;
+    // cout << "test" << endl;
     return false;
   }
   if(!integerInBereik(rij, 0, hoogte-1) || 
     !integerInBereik(kolom, 0, breedte-1)){
-    cout << "teste" << endl;
+    // cout << "teste" << endl;
     return false;
   }
   if (bord[rij][kolom] == 1) {
-    cout << "testen" << endl;
+    // cout << "testen" << endl;
     return false;
   }
 
   bord[rij][kolom] = 1;
   zetten.push_back(make_pair(rij, kolom));
+  totaalscore += extrascore(make_pair(rij,kolom));
   return true;
 }  // doeZet
 
@@ -148,30 +196,124 @@ bool Azul::unDoeZet ()
   // TODO: implementeer deze memberfunctie
   int lengte =zetten.size();
   pair<int, int> zet = zetten[lengte-1];
+  totaalscore -= extrascore(zet);
   bord[zet.first][zet.second] = 0;
   zetten.pop_back();
-  return false;
+  return true;
 
 }  // unDoeZet
 
 //****************************************************************************
+bool Azul::isvol() {
+  for (int i = 0; i < hoogte; i++) {
+    for (int j = 0; j < breedte; j++) {
+      if (bord[i][j] == 0) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+
+void Azul:: recursiefminimaxi(int &mini, long long &volgordesMini, 
+                                int &maxi, long long &volgordesMaxi) {
+  if(isvol()){
+    if (totaalscore > maxi) {
+      maxi = totaalscore;
+      volgordesMaxi = 1;
+    }
+    else if (totaalscore == maxi) {
+      volgordesMaxi++;
+    }
+    if (totaalscore < mini) {
+      mini = totaalscore;
+      volgordesMini = 1;
+    }
+    else if (totaalscore == mini) {
+      volgordesMini++;
+    }
+    // return;
+  }
+
+  for(int i = 0; i < hoogte; i++){
+    for(int j = 0; j < breedte; j++){
+      if(doeZet(i,j)){
+        recursiefminimaxi(mini, volgordesMini, maxi, volgordesMaxi);
+        unDoeZet();
+      }
+    }
+  }
+
+}
 
 bool Azul::bepaalMiniMaxiScoreRec (int &mini, long long &volgordesMini,
                                    int &maxi, long long &volgordesMaxi)
 {
+    // Bepaal rechtstreeks recursief de minimale en de maximale totaalscore
+    // die gehaald kunnen worden als je het bord compleet wil bedekken met
+    // tegels, uitgaande van de huidige bedekking van het bord.
+    // Bepaal ook met hoeveel volgordes je deze scores kunt bereiken.
+    // Controleer eerst of er een geldig bord is.
+    // Retourneer:
+    // * true, als er een geldig bord is
+    // * false, anders
+    // Post:
+    // * Als er een geldig bord is, bevatten parameters mini, volgordesMini,
+    //   maxi en volgordesMaxi de gezochte waardes.
+    // * De bedekking van het bord is niet veranderd.
   // TODO: implementeer deze memberfunctie
-  
-  return false;
+  if (!geldigBord) {
+    return false;
+  }
+  mini = INT_MAX;
+  maxi = INT_MIN;
+  volgordesMaxi = 0;
+  volgordesMini = 0;
+  recursiefminimaxi(mini,volgordesMini, maxi, volgordesMaxi);
+  return true;
 
 }  // bepaalMiniMaxiScoreRec
 
 //*************************************************************************
+int Azul::encode() {
+  int encoded = 0;
+  int index = 0;
+  for (int i = 0; i < hoogte; i++) {
+      for (int j = 0; j < breedte; j++) {
+          if (bord[i][j] == 1) {
+              encoded |= (1 << index);
+          }
+          else if (bord[i][j] == 0) {
+            encoded &= ~(1 << index);
+          }
+          index++;
+      }
+  }
+  return encoded;
+}
+
+void Azul::decode(){
+
+}
+
+void Azul::topdownminimax(int &mini, long long &volgordesMini, 
+                          int &maxi, long long &volgordesMaxi) {
+  
+}
 
 bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
                                   int &maxi, long long &volgordesMaxi)
 {
   // TODO: implementeer deze memberfunctie
-
+  if (!geldigBord) {
+    return false;
+  }
+  mini = INT_MAX;
+  maxi = INT_MIN;
+  volgordesMaxi = 0;
+  volgordesMini = 0;
+  cout << encode() << endl;
   return false;
 
 }  // bepaalMiniMaxiScoreTD
