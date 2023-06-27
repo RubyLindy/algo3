@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include "standaard.h"
 #include "azul.h"
 using namespace std;
@@ -195,6 +196,9 @@ bool Azul::unDoeZet ()
   }
   // TODO: implementeer deze memberfunctie
   int lengte =zetten.size();
+  if (lengte == 0) {
+    return false;
+  }
   pair<int, int> zet = zetten[lengte-1];
   totaalscore -= extrascore(zet);
   bord[zet.first][zet.second] = 0;
@@ -214,7 +218,6 @@ bool Azul::isvol() {
   }
   return true;
 }
-
 
 void Azul:: recursiefminimaxi(int &mini, long long &volgordesMini, 
                                 int &maxi, long long &volgordesMaxi) {
@@ -294,12 +297,64 @@ int Azul::encode() {
 }
 
 void Azul::decode(){
-
+  //weet nog niet of nodig
 }
 
-void Azul::topdownminimax(int &mini, long long &volgordesMini, 
-                          int &maxi, long long &volgordesMaxi) {
-  
+void Azul::topdownminimax(int bitbord, int &mini, long long &volgordesMini, 
+                          int &maxi, long long &volgordesMaxi, int* minScores, int* maxScores) {
+  if (isvol()) {
+    // cout << "AAAAAA" << endl;
+    int score = totaalscore;
+
+    // Update the minimum score and count
+    if (score < mini) {
+      mini = score;
+      volgordesMini = 1;
+    }
+    else if (score == mini) {
+      volgordesMini++;
+    }
+
+    // Update the maximum score and count
+    if (score > maxi) {
+      maxi = score;
+      volgordesMaxi = 1;
+    }
+    else if (score == maxi) {
+        volgordesMaxi++;
+    }
+    return;
+  }
+  if ((minScores[bitbord] != -1) && (maxScores[bitbord] != -1)) {
+    if ((mini == totaalscore + minScores[bitbord])) {
+      volgordesMini++;
+    }
+    if ((maxi == totaalscore + maxScores[bitbord])) {
+      volgordesMaxi++;
+    }
+    if ((totaalscore + maxScores[bitbord]) > maxi) {
+      maxi = totaalscore + maxScores[bitbord];
+      cout << maxi << endl;
+      volgordesMaxi = 1;
+    }
+    if ((totaalscore + minScores[bitbord]) < mini) {
+      mini = totaalscore + minScores[bitbord];
+      cout << mini << "!" <<  endl;
+      volgordesMini = 1;
+    }
+    return;
+  }
+  for (int i = 0; i < hoogte; i++) {
+    for (int j = 0; j < breedte; j++) {
+      if (doeZet(i, j)) {
+        int newEncodedBoard = encode();
+        topdownminimax(newEncodedBoard, mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
+        unDoeZet();
+      }
+    }
+  }
+  minScores[bitbord] = mini-totaalscore;
+  maxScores[bitbord] = maxi-totaalscore;
 }
 
 bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
@@ -309,12 +364,25 @@ bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
   if (!geldigBord) {
     return false;
   }
+  // cout << "a" << endl;
+  int size = 1 << (hoogte * breedte);
+  int* minScores = new int[size];
+  int* maxScores = new int[size];
+  memset(minScores, -1, sizeof(int) * size);
+  memset(maxScores, -1, sizeof(int) * size);
+  // cout << "d" << endl;
   mini = INT_MAX;
   maxi = INT_MIN;
   volgordesMaxi = 0;
   volgordesMini = 0;
-  cout << encode() << endl;
-  return false;
+  int encodedbord = encode();
+  // cout << encodedbord << endl;
+  topdownminimax(encodedbord, mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
+  // cout << encode() << endl;
+  delete[] minScores;
+  delete[] maxScores;
+
+  return true;
 
 }  // bepaalMiniMaxiScoreTD
 

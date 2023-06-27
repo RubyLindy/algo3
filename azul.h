@@ -170,8 +170,8 @@ class Azul
     int extrascore(pair <int, int> zet);
     void recursiefminimaxi(int &mini, long long &volgordesMini, 
                             int &maxi, long long &volgordesMaxi);
-    void topdownminimax(int &mini, long long &volgordesMini, 
-                        int &maxi, long long &volgordesMaxi);
+    void topdownminimax(int bitbord, int &mini, long long &volgordesMini, 
+                        int &maxi, long long &volgordesMaxi, int* minScores, int* maxScores);
     bool isvol();
     int encode();
     void decode();
