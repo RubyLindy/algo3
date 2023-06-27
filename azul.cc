@@ -333,11 +333,13 @@ void Azul::topdownminimax(int bitbord, int &mini, long long &volgordesMini,
       volgordesMaxi++;
     }
     if ((totaalscore + maxScores[bitbord]) > maxi) {
+      cout << "eerst: " << maxi << endl;
       maxi = totaalscore + maxScores[bitbord];
       cout << maxi << endl;
       volgordesMaxi = 1;
     }
     if ((totaalscore + minScores[bitbord]) < mini) {
+      cout << "eerst: " << mini << endl;
       mini = totaalscore + minScores[bitbord];
       cout << mini << "!" <<  endl;
       volgordesMini = 1;
@@ -353,8 +355,8 @@ void Azul::topdownminimax(int bitbord, int &mini, long long &volgordesMini,
       }
     }
   }
-  minScores[bitbord] = mini-totaalscore;
-  maxScores[bitbord] = maxi-totaalscore;
+  minScores[bitbord] = mini - totaalscore;
+  maxScores[bitbord] = maxi - totaalscore;
 }
 
 bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
@@ -391,12 +393,8 @@ bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
 bool Azul::bepaalMiniMaxiScoreBU (int &mini, long long &volgordesMini,
                                   int &maxi, long long &volgordesMaxi,
                                   vector< pair<int,int> > &zettenReeksMini,
-                                  vector< pair<int,int> > &zettenReeksMaxi)
-{
-  // TODO: implementeer deze memberfunctie
-
+                                  vector< pair<int,int> > &zettenReeksMaxi) {
   return false;
-
 }  // bepaalMiniMaxiScoreBU
 
 //*************************************************************************
