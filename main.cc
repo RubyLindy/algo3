@@ -164,15 +164,62 @@ void menuVoorBord (Azul *a1)
 // Voer de experimenten uit, zoals beschreven in de opdracht.
 void doeExperimenten ()
 { int keuze;
+  Azul *a1;
  
   keuze = 0;
   while (keuze!=4)
   {
     keuze = keuzeUitMenu2 ();
+    //Keuze 1 = rechtstreeks recursief
+    //Keuze 2 = Top down
+    //Keuze 3 = Bottom up
+    
+    clock_t start;
+    clock_t end;
+    int elapsed;
+    int hoogte = 2;
+    int breedte = 1;
+    int mini, maxi;
+    bool result;
+    long long volgorde;
+    vector<pair<int, int>> zettenReeksMini, zettenReeksMaxi;
+    if(keuze!=4){
+      while(hoogte != 6 && breedte != 5 ){
+        if(hoogte == breedte){
+          hoogte++;
+        }
+        else{
+          breedte++;
+        }
 
-    // TODO: doe het experiment voor de gekozen manier om minimale
-    //   en maximale scores te bepalen
+        a1 = new Azul (hoogte, breedte);
 
+        if(keuze==1){
+          start = clock();
+          result = a1->bepaalMiniMaxiScoreRec(mini,volgorde, maxi, volgorde);
+          end = clock();
+          elapsed = end - start;
+          cout << "(" << hoogte << "," << breedte << ")" " kostte " << elapsed << " clock ticks, ofwel "
+            << (((double)elapsed)/CLOCKS_PER_SEC) << " seconden." << endl;
+        }
+        if(keuze==2){
+          start = clock();
+          result = a1->bepaalMiniMaxiScoreTD(mini,volgorde,maxi,volgorde);
+          end = clock();
+          elapsed = end - start;
+          cout << "(" << hoogte << "," << breedte << ")" " kostte " << elapsed << " clock ticks, ofwel "
+            << (((double)elapsed)/CLOCKS_PER_SEC) << " seconden." << endl;
+        }
+        if(keuze==3){
+          start = clock();
+          result = a1->bepaalMiniMaxiScoreBU(mini,volgorde,maxi,volgorde, zettenReeksMini, zettenReeksMaxi);
+          end = clock();
+          elapsed = end - start;
+          cout << "(" << hoogte << "," << breedte << ")" " kostte " << elapsed << " clock ticks, ofwel "
+            << (((double)elapsed)/CLOCKS_PER_SEC) << " seconden." << endl;
+        }
+      }
+    }
   }  // while
 
 }  // doeExperimenten

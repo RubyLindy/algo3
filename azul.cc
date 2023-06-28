@@ -236,7 +236,7 @@ void Azul:: recursiefminimaxi(int &mini, long long &volgordesMini,
     else if (totaalscore == mini) {
       volgordesMini++;
     }
-    // return;
+    return;
   }
 
   for(int i = 0; i < hoogte; i++){
@@ -296,67 +296,74 @@ int Azul::encode() {
   return encoded;
 }
 
-void Azul::decode(){
-  //weet nog niet of nodig
+void Azul::decode(int encodedBoard){
+  for (int i = 0; i < hoogte; i++) {
+    for (int j = 0; j < breedte; j++) {
+      int mask = 1 << (i * breedte + j);
+      int bit = (encodedBoard & mask) ? 1 : 0;
+      bord[i][j] = bit;
+    }
+  }
 }
 
-void Azul::topdownminimax(int bitbord, int &mini, long long &volgordesMini, 
-                          int &maxi, long long &volgordesMaxi, int* minScores, int* maxScores) {
+pair <int,int> Azul::topdownminimax(int &mini, long long &volgordesMini, int &maxi, long long &volgordesMaxi, int* minScores, int* maxScores) {
+  int newEncodedBoard = encode();
   if (isvol()) {
-    // cout << "AAAAAA" << endl;
     int score = totaalscore;
-
-    // Update the minimum score and count
     if (score < mini) {
       mini = score;
       volgordesMini = 1;
-    }
-    else if (score == mini) {
+    } else if (score == mini) {
       volgordesMini++;
     }
 
-    // Update the maximum score and count
     if (score > maxi) {
       maxi = score;
       volgordesMaxi = 1;
-    }
-    else if (score == maxi) {
-        volgordesMaxi++;
-    }
-    return;
-  }
-  if ((minScores[bitbord] != -1) && (maxScores[bitbord] != -1)) {
-    if ((mini == totaalscore + minScores[bitbord])) {
-      volgordesMini++;
-    }
-    if ((maxi == totaalscore + maxScores[bitbord])) {
+    } else if (score == maxi) {
       volgordesMaxi++;
     }
-    if ((totaalscore + maxScores[bitbord]) > maxi) {
-      cout << "eerst: " << maxi << endl;
-      maxi = totaalscore + maxScores[bitbord];
-      cout << maxi << endl;
-      volgordesMaxi = 1;
+    // cout << totaalscore << endl;
+    return make_pair(totaalscore, totaalscore);
+  }
+
+  if (minScores[newEncodedBoard] != -1 && maxScores[newEncodedBoard] != -1) {
+    if (totaalscore + minScores[newEncodedBoard] == mini) {
+      volgordesMini++;
     }
-    if ((totaalscore + minScores[bitbord]) < mini) {
-      cout << "eerst: " << mini << endl;
-      mini = totaalscore + minScores[bitbord];
-      cout << mini << "!" <<  endl;
+    else if ((totaalscore + minScores[newEncodedBoard]) < mini) {
+      mini = totaalscore + minScores[newEncodedBoard];
       volgordesMini = 1;
     }
-    return;
+    if (totaalscore + maxScores[newEncodedBoard] == maxi) {
+      volgordesMaxi++;
+    }
+    else if ((totaalscore + maxScores[newEncodedBoard]) > maxi) {
+      maxi = totaalscore + maxScores[newEncodedBoard];
+      volgordesMaxi = 1;
+    }
+    return make_pair(totaalscore + maxScores[newEncodedBoard], totaalscore + minScores[newEncodedBoard]);
   }
+  int hulp_min = INT_MAX;
+  int hulp_max = INT_MIN;
+  pair<int, int> hulp;
   for (int i = 0; i < hoogte; i++) {
     for (int j = 0; j < breedte; j++) {
       if (doeZet(i, j)) {
-        int newEncodedBoard = encode();
-        topdownminimax(newEncodedBoard, mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
+        hulp = topdownminimax(mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
+        if (hulp.second < hulp_min){
+          hulp_min = hulp.second;
+        }
+        if (hulp.first > hulp_max) {
+          hulp_max = hulp.first;
+        }
         unDoeZet();
       }
     }
   }
-  minScores[bitbord] = mini - totaalscore;
-  maxScores[bitbord] = maxi - totaalscore;
+  minScores[newEncodedBoard] = hulp_min - totaalscore;
+  maxScores[newEncodedBoard] = hulp_max - totaalscore;
+  return make_pair(hulp_max, hulp_min);
 }
 
 bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
@@ -377,10 +384,7 @@ bool Azul::bepaalMiniMaxiScoreTD (int &mini, long long &volgordesMini,
   maxi = INT_MIN;
   volgordesMaxi = 0;
   volgordesMini = 0;
-  int encodedbord = encode();
-  // cout << encodedbord << endl;
-  topdownminimax(encodedbord, mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
-  // cout << encode() << endl;
+  topdownminimax(mini, volgordesMini, maxi, volgordesMaxi, minScores, maxScores);
   delete[] minScores;
   delete[] maxScores;
 
@@ -394,7 +398,84 @@ bool Azul::bepaalMiniMaxiScoreBU (int &mini, long long &volgordesMini,
                                   int &maxi, long long &volgordesMaxi,
                                   vector< pair<int,int> > &zettenReeksMini,
                                   vector< pair<int,int> > &zettenReeksMaxi) {
-  return false;
+  //this doesnt work
+  if (!geldigBord) {
+    return false;
+  }
+  mini = INT_MAX;
+  maxi = INT_MIN;
+  volgordesMaxi = 0;
+  volgordesMini = 0;
+  // int size = 1 << (hoogte * breedte);
+  // int* minScores = new int[size];
+  // int* maxScores = new int[size];
+  // memset(minScores, -1, sizeof(int) * size);
+  // memset(maxScores, -1, sizeof(int) * size);
+    // Initialize the necessary data structures
+  vector<int> minScoreTable(1 << (hoogte * breedte), INT_MAX);
+  vector<int> maxScoreTable(1 << (hoogte * breedte), INT_MIN);
+  vector<long long> volgordesTable(1 << (hoogte * breedte), 0);
+  vector<vector<pair<int, int>>> zettenReeksTable(1 << (hoogte * breedte));
+
+  // Set the initial board state
+  int initialEncodedBoard = encode();
+  minScoreTable[initialEncodedBoard] = totaalscore;
+  maxScoreTable[initialEncodedBoard] = totaalscore;
+  volgordesTable[initialEncodedBoard] = 1;
+
+  // Perform the bottom-up dynamic programming
+  for (int encodedBoard = initialEncodedBoard; encodedBoard < (1 << (hoogte * breedte)); encodedBoard++) {
+    if (minScoreTable[encodedBoard] == INT_MAX)
+      continue;
+
+    // Decode the board state
+    decode(encodedBoard);
+
+    // Perform all possible moves and update the scores
+    for (int i = 0; i < hoogte; i++) {
+      for (int j = 0; j < breedte; j++) {
+        if (doeZet(i, j)) {
+          int newEncodedBoard = encode();
+
+          // Update the minimum score and count
+          int minScore = minScoreTable[encodedBoard];
+          int maxScore = maxScoreTable[encodedBoard];
+
+          if (minScore < minScoreTable[newEncodedBoard]) {
+            minScoreTable[newEncodedBoard] = minScore;
+            volgordesTable[newEncodedBoard] = volgordesTable[encodedBoard];
+            zettenReeksTable[newEncodedBoard] = zettenReeksTable[encodedBoard];
+          } else if (minScore == minScoreTable[newEncodedBoard]) {
+            volgordesTable[newEncodedBoard] += volgordesTable[encodedBoard];
+          }
+
+          // Update the maximum score and count
+          if (maxScore > maxScoreTable[newEncodedBoard]) {
+            maxScoreTable[newEncodedBoard] = maxScore;
+            volgordesTable[newEncodedBoard] = volgordesTable[encodedBoard];
+            zettenReeksTable[newEncodedBoard] = zettenReeksTable[encodedBoard];
+          } else if (maxScore == maxScoreTable[newEncodedBoard]) {
+            volgordesTable[newEncodedBoard] += volgordesTable[encodedBoard];
+          }
+
+          // Add the current move to the move sequence
+          zettenReeksTable[newEncodedBoard].push_back({i, j});
+
+          unDoeZet();
+        }
+      }
+    }
+  }
+
+  // Retrieve the final scores and move sequences
+  mini = minScoreTable[initialEncodedBoard];
+  volgordesMini = volgordesTable[initialEncodedBoard];
+  zettenReeksMini = zettenReeksTable[initialEncodedBoard];
+
+  maxi = maxScoreTable[initialEncodedBoard];
+  volgordesMaxi = volgordesTable[initialEncodedBoard];
+  zettenReeksMaxi = zettenReeksTable[initialEncodedBoard];
+  return true; 
 }  // bepaalMiniMaxiScoreBU
 
 //*************************************************************************
@@ -402,8 +483,9 @@ bool Azul::bepaalMiniMaxiScoreBU (int &mini, long long &volgordesMini,
 void Azul::drukAfZettenReeksen (vector<pair <int,int> > &zettenReeksMini,
                                 vector<pair <int,int> > &zettenReeksMaxi)
 {
-  // TODO: implementeer deze memberfunctie
-
+  for (int i = 0; i < zettenReeksMini.size(); i++) {
+    cout << zettenReeksMini[i].first << "," << zettenReeksMini[i].second << endl;
+  }
 }  // drukAfZettenReeksen
 
 //*************************************************************************
